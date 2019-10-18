@@ -18,6 +18,7 @@ HORIZONTAL_SLICE = 0
 EXPECTED_HEIGHT = 16
 MERGED_ROW_TOLERANCE = 5
 
+snippet_num = 413
 
 def rle(inarray):
     """ run length encoding. Partial credit to R rle function. 
@@ -108,7 +109,7 @@ def add_border(img):
     return border_img
 
 
-def seg_rows(out_dir, img_file):
+def seg_rows(img_file, config):
     try:
         makedirs(out_dir)
     except:
@@ -177,16 +178,14 @@ def seg_rows(out_dir, img_file):
     # for i in zip(z, p):
     #    print(i)
 
-    config = '--oem 1 --psm 6 -c tessedit_char_whitelist=0123456789 -l eng.ohiofont'
     total_snippets = 0
     for idx, (start, length) in enumerate(zip(p, z)):
         if length < MIN_TEXT_HEIGHT:
             continue
 
-        out_path = join(out_dir, str(idx) + '.jpg')
         snippet = img_gray_orig[start - 2: start + length + 2, :]
-        # cv2.imwrite(out_path, snippet)
-        snippet = cv2.resize(snippet, (0, 0), fx=3.0, fy=3.0, interpolation=cv2.INTER_CUBIC)
+
+        snippet = cv2.resize(snippet, (0, 0), fx=4.0, fy=4.0, interpolation=cv2.INTER_CUBIC)
         snippet = cv2.bilateralFilter(snippet, 9, 100, 100)
         snippet = cv2.convertScaleAbs(snippet, alpha=1.05, beta=0)
         snippet = add_border(snippet)
@@ -199,11 +198,6 @@ def seg_rows(out_dir, img_file):
             ocr = text.text.values[0]
             print("ocr={} conf={}".format(ocr, conf))
 
-        # print("ocr: {}, conf: {}".format(word, conf))
-
-        # print(idx, ':', pytesseract.image_to_string(snippet, config = config))
-
-        # print('out path:', out_path)
         total_snippets += 1
 
     print("total snippets:", total_snippets)
@@ -213,8 +207,25 @@ def seg_rows(out_dir, img_file):
     # plt.show()
 
 
+configs = {'_col1': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col2': '-l eng --oem 1 --psm 13 -l eng',
+           '_col3': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col4': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col5': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col6': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col7': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col8': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col9': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col10': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col11': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col12': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col13': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col14': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789',
+           '_col15': '--oem 1 --psm 13 -l eng.ohio-digits -c tessedit_char_whitelist=0123456789'}
+
+
 if __name__ == '__main__':
-    os.chdir(r'C:\School\Handwriting Lab\Rural_by_cause_1900_2')
+    os.chdir(r'C:\School\Handwriting Lab\Rural_by_cause_training')
 
     snippet_index = 0
     for image_file in glob(f'*.jpg'):
@@ -222,7 +233,7 @@ if __name__ == '__main__':
         # Name output file
         current_wd = os.getcwd()
         cut = current_wd.rsplit('\\', 1)
-        output_val = image_file[image_file.find(cut[1]) + len(cut[1]):image_file.rfind('.jpg')]
+        output_val = '_' + image_file[image_file.find(cut[1]) + len(cut[1]):image_file.rfind('.jpg')]
         print(output_val)
         out_dir = (r'C:\School\Handwriting Lab\out\{}'.format(cut[1])) + '_' + output_val
-        seg_rows(out_dir, image_file)
+        seg_rows(image_file, configs[output_val])
